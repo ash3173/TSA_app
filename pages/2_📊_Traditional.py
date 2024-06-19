@@ -35,7 +35,9 @@ node = st.sidebar.file_uploader("Upload a Node data file", type=["csv"])
 edge = st.sidebar.file_uploader("Upload a Edge data file", type=["csv"])
 
 forecast_type_options = ["Univariate",
-                         "Multivariate - Node Level", "Multivariate K-hop"]
+                         "Multivariate - Node Level", 
+                         #"Multivariate K-hop"
+                         ]
 
 selected_forecast_option = st.sidebar.selectbox(
     "Select the model", forecast_type_options)
@@ -49,9 +51,9 @@ if node and edge:
 
     if selected_forecast_option == "Univariate":
 
-        options = ["Select","Exponential Smoothing", "ARIMA","SARIMA","SARIMAX", "STL",
-                   "ARCH", "GARCH",
-                   "Prophet"]
+        options = ["Select","Exponential Smoothing", "ARIMA","SARIMA",
+        #"SARIMAX", 
+        "STL", "ARCH", "GARCH", "Prophet"]
         selected_option = st.selectbox("Select the model", options)
 
         num_nodes = len(node_data["node"].unique())

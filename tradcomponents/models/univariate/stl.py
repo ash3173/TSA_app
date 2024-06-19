@@ -36,7 +36,7 @@ def stl_model(f1) :
     forecast = model_fit.forecast(test_size)
 
     final = pd.concat([f1, forecast], axis=1)
-    st.write(final)
+    #st.write(final)
 
     plot = px.line(final, x=final.index, y=final.columns, title="Forecast using ARIMA model")
     st.plotly_chart(plot)
