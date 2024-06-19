@@ -32,7 +32,7 @@ def single_LSTM(temp):
     X_train1, X_val1, y_train1, y_val1 = train_test_split(X_temp, y_temp, test_size=1/9, random_state=42)
 
 
-    epochs = 50
+    epochs = 10
     progress_bar = st.progress(0)
     epoch_text = st.empty()
     for epoch in range(epochs):
@@ -43,7 +43,6 @@ def single_LSTM(temp):
         progress_bar.progress(progress)
 
 
-    model1 = load_model('model1/')
 
     test_predictions = model1.predict(X_test1).flatten()
     test_results = pd.DataFrame(data={'Test Predictions':test_predictions, 'Actuals':y_test1})

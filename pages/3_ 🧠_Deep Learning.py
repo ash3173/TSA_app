@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 from dlcomponents.models.single_lstm import single_LSTM
 from dlcomponents.models.single_cnn import single_CNN
 from dlcomponents.models.single_gru import single_GRU
+from dlcomponents.models.multi_lstm import multi_LSTM
+from dlcomponents.models.multi_cnn import multi_CNN
+from dlcomponents.models.multi_gru import multi_GRU
 
 # Set the title of the Streamlit app
 st.title("Time Series Analysis using Deep Learning.")
@@ -113,9 +116,84 @@ elif model_option == "LSTM" and analysis_type == "Multivariate":
     st.write(selected_node_data)
     st.line_chart(selected_node_data)
 
-    feature_indices = st.multiselect("Select feature indices for multivariate analysis", list(range(num_features)), default=[0])
-    selected_node_features_data = selected_node_data.iloc[:, feature_indices]
+    feature_headers = selected_node_data.columns.tolist()
+    selected_feature_headers = st.multiselect("Select feature headers for multivariate analysis", feature_headers, default=[feature_headers[0]])
+
+    selected_node_features_data = selected_node_data[selected_feature_headers]
     st.write(selected_node_features_data)
 
-    if st.button("Train LSTM Model"):
-        st.write("In progress.")
+    # New code to select two feature headers for forecasting
+    forecast_headers = st.multiselect("Select two feature headers for forecasting", selected_feature_headers, default=selected_feature_headers[:2])
+
+    # Ensure only two headers are selected
+    if len(forecast_headers) != 2:
+        st.warning("Please select exactly two feature headers for forecasting.")
+    else:
+        selected_forecast_features_data = selected_node_features_data[forecast_headers]
+        st.write("Selected features for forecasting:")
+        st.write(selected_forecast_features_data)
+        if st.button("Train LSTM Model"):
+            multi_LSTM(selected_node_features_data,forecast_headers[0],forecast_headers[1])
+
+elif model_option == "CNN" and analysis_type == "Multivariate":
+    st.write("CNN model selected for multi-variate analysis.")
+    num_nodes = len(node_data["node"].unique())
+    num_features = len(node_data["feature"].unique())
+    node_index = st.slider("Select the node index", 0, num_nodes - 1)
+
+    temp = node_data
+    st.write("Merged data for node", node_index)
+    selected_node_data = get_node_data_from_merged(merged_data=temp, node_index=node_index)
+    st.write(selected_node_data)
+    st.line_chart(selected_node_data)
+
+    feature_headers = selected_node_data.columns.tolist()
+    selected_feature_headers = st.multiselect("Select feature headers for multivariate analysis", feature_headers, default=[feature_headers[0]])
+
+    selected_node_features_data = selected_node_data[selected_feature_headers]
+    st.write(selected_node_features_data)
+
+    # New code to select two feature headers for forecasting
+    forecast_headers = st.multiselect("Select two feature headers for forecasting", selected_feature_headers, default=selected_feature_headers[:2])
+
+    # Ensure only two headers are selected
+    if len(forecast_headers) != 2:
+        st.warning("Please select exactly two feature headers for forecasting.")
+    else:
+        selected_forecast_features_data = selected_node_features_data[forecast_headers]
+        st.write("Selected features for forecasting:")
+        st.write(selected_forecast_features_data)
+        
+        if st.button("Train CNN Model"):
+            multi_CNN(selected_node_features_data, forecast_headers[0], forecast_headers[1])
+elif model_option == "GRU" and analysis_type == "Multivariate":
+    st.write("GRU model selected for multi-variate analysis.")
+    num_nodes = len(node_data["node"].unique())
+    num_features = len(node_data["feature"].unique())
+    node_index = st.slider("Select the node index", 0, num_nodes - 1)
+
+    temp = node_data
+    st.write("Merged data for node", node_index)
+    selected_node_data = get_node_data_from_merged(merged_data=temp, node_index=node_index)
+    st.write(selected_node_data)
+    st.line_chart(selected_node_data)
+
+    feature_headers = selected_node_data.columns.tolist()
+    selected_feature_headers = st.multiselect("Select feature headers for multivariate analysis", feature_headers, default=[feature_headers[0]])
+
+    selected_node_features_data = selected_node_data[selected_feature_headers]
+    st.write(selected_node_features_data)
+
+    # New code to select two feature headers for forecasting
+    forecast_headers = st.multiselect("Select two feature headers for forecasting", selected_feature_headers, default=selected_feature_headers[:2])
+
+    # Ensure only two headers are selected
+    if len(forecast_headers) != 2:
+        st.warning("Please select exactly two feature headers for forecasting.")
+    else:
+        selected_forecast_features_data = selected_node_features_data[forecast_headers]
+        st.write("Selected features for forecasting:")
+        st.write(selected_forecast_features_data)
+        
+        if st.button("Train GRU Model"):
+            multi_GRU(selected_node_features_data, forecast_headers[0], forecast_headers[1])
