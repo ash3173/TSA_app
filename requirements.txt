@@ -6,8 +6,6 @@ numpy
 scikit-learn
 datetime
 tensorflow
-time
 statsmodels
 prophet
 arch
-warnings
