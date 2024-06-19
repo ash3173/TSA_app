@@ -16,15 +16,11 @@ import streamlit as st
 
 def multi_CNN(temp, sub1, sub2):
     model = Sequential()
-    model.add(Conv1D(32, kernel_size=3, activation='relu', input_shape=(temp.shape[1], 1)))
-    model.add(MaxPooling1D(pool_size=2))
-    model.add(Conv1D(64, kernel_size=3, activation='relu'))
-    model.add(MaxPooling1D(pool_size=2))
+    model.add(InputLayer((7, temp.shape[1])))
+    model.add(Conv1D(64, kernel_size=2, activation='relu'))
     model.add(Flatten())
-    model.add(Dense(8, activation='relu'))
-    model.add(Dense(2, activation='linear'))
-
-    model.summary()
+    model.add(Dense(8, 'relu'))
+    model.add(Dense(2, 'linear'))
 
     cp = ModelCheckpoint('model/', save_best_only=True)
     model.compile(loss=MeanSquaredError(), optimizer=Adam(learning_rate=0.001), metrics=[RootMeanSquaredError()])
