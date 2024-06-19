@@ -1,37 +1,35 @@
 import pandas as pd
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.models import Sequential
+from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import *
-from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.callbacks import ModelCheckpoint, History
 from tensorflow.keras.losses import MeanSquaredError
 from tensorflow.keras.metrics import RootMeanSquaredError
 from tensorflow.keras.optimizers import Adam
-from dlcomponents.models.preprocess import df_to_X_y
 from dlcomponents.models.multi_preprocess import df_to_X_y3
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.models import load_model
-import matplotlib.pyplot as plt
-import streamlit as st
-st.set_option('deprecation.showPyplotGlobalUse', False)
 import time
 import plotly.express as px
+import streamlit as st
 
-def multi_LSTM(temp,sub1, sub2):
-    model5 = Sequential()
-    model5.add(InputLayer((7, temp.shape[1])))
-    model5.add(LSTM(64))
-    model5.add(Dense(8, 'relu'))
-    model5.add(Dense(2, 'linear'))
+# Suppress the deprecation warning for plt.show() usage
+st.set_option('deprecation.showPyplotGlobalUse', False)
 
-    model5.summary()
+def multi_LSTM(temp, sub1, sub2):
+    model = Sequential()
+    model.add(LSTM(64, input_shape=(7, temp.shape[1])))
+    model.add(Dense(8, activation='relu'))
+    model.add(Dense(2, activation='linear'))
 
-    cp5 = ModelCheckpoint('model5/', save_best_only=True)
-    model5.compile(loss=MeanSquaredError(), optimizer=Adam(learning_rate=0.001), metrics=[RootMeanSquaredError()])
+    model.summary()
 
+    cp = ModelCheckpoint('model/', save_best_only=True)
+    history = History()
+    model.compile(loss=MeanSquaredError(), optimizer=Adam(learning_rate=0.001), metrics=[RootMeanSquaredError()])
 
     WINDOW_SIZE = 7
-    X, y = df_to_X_y3(temp, WINDOW_SIZE,sub1, sub2)
+    X, y = df_to_X_y3(temp, WINDOW_SIZE, sub1, sub2)
 
     X_train, X_temp, y_train, y_temp = train_test_split(X, y, train_size=0.75, random_state=42)
     X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.4, random_state=42)
@@ -63,14 +61,35 @@ def multi_LSTM(temp,sub1, sub2):
     epochs = 10
     progress_bar = st.progress(0)
     epoch_text = st.empty()
-    for epoch in range(epochs):
-        model5.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=1, callbacks=[cp5], verbose=0)
-        time.sleep(1)  # Simulate training time
-        progress = (epoch + 1) / epochs
-        epoch_text.text(f"Epoch: {epoch + 1}")
-        progress_bar.progress(progress)
+    loss_text = st.empty()
+    val_loss_text = st.empty()
 
-    def plot_predictions2(model, X, y, headers, start=0, end=100):
+    for epoch in range(epochs):
+        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=1, callbacks=[cp, history], verbose=0)
+        time.sleep(1)  # Simulate training time
+
+        # Update progress bar and display epoch, loss, and validation loss
+        progress = (epoch + 1) / epochs
+        progress_bar.progress(progress)
+        epoch_text.text(f"Epoch: {epoch + 1}")
+        loss_text.text(f"Loss: {history.history['loss'][0]:.4f}")
+        val_loss_text.text(f"Val Loss: {history.history['val_loss'][0]:.4f}")
+
+    model = load_model('model/')
+
+    # Predictions and Actuals table
+    test_predictions = model.predict(X_test)
+    df_results = pd.DataFrame({
+        f'{sub1} Predictions': test_predictions[:, 0],
+        f'{sub1} Actuals': y_test[:, 0],
+        f'{sub2} Predictions': test_predictions[:, 1],
+        f'{sub2} Actuals': y_test[:, 1]
+    })
+    st.write("Predicted vs Actual Values:")
+    st.write(df_results)
+
+    # Plot predictions vs actuals using Plotly
+    def plot_predictions(model, X, y, headers, start=0, end=100):
         predictions = model.predict(X)
         p_preds, temp_preds = predictions[:, 0], predictions[:, 1]
         p_actuals, temp_actuals = y[:, 0], y[:, 1]
@@ -94,4 +113,6 @@ def multi_LSTM(temp,sub1, sub2):
         st.plotly_chart(fig)
 
         return df
-    plot_predictions2(model5, X_test, y_test, headers=[sub1, sub2])
+
+    plot_predictions(model, X_test, y_test, headers=[sub1, sub2])
+

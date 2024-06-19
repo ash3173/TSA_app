@@ -27,7 +27,7 @@ def stl_model(f1) :
     forecast = forecast.to_frame(name='predicted_value')
 
     final = pd.concat([f1, forecast], axis=1)
-    plot = px.line(final, x=final.index, y=final.columns, title="Forecast using STL decomposition model")
+    plot = px.line(final, x=final.index, y=final.columns, title="Forecast using STL decomposition model using ARIMA")
     st.plotly_chart(plot)
 
     # plotting without using STL model
@@ -38,5 +38,5 @@ def stl_model(f1) :
     final = pd.concat([f1, forecast], axis=1)
     #st.write(final)
 
-    plot = px.line(final, x=final.index, y=final.columns, title="Forecast using ARIMA model")
+    plot = px.line(final, x=final.index, y=final.columns, title="Forecast without using STL decompositionusing ARIMA")
     st.plotly_chart(plot)

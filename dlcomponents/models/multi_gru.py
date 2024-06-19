@@ -1,18 +1,20 @@
 import pandas as pd
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.models import Sequential
+from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import *
-from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.callbacks import ModelCheckpoint, History
 from tensorflow.keras.losses import MeanSquaredError
 from tensorflow.keras.metrics import RootMeanSquaredError
 from tensorflow.keras.optimizers import Adam
-from dlcomponents.models.preprocess import df_to_X_y
 from dlcomponents.models.multi_preprocess import df_to_X_y3
 from sklearn.model_selection import train_test_split
 import time
 import plotly.express as px
 import streamlit as st
+
+# Suppress the deprecation warning for plt.show() usage
+st.set_option('deprecation.showPyplotGlobalUse', False)
 
 def multi_GRU(temp, sub1, sub2):
     model = Sequential()
@@ -23,6 +25,7 @@ def multi_GRU(temp, sub1, sub2):
     model.summary()
 
     cp = ModelCheckpoint('model/', save_best_only=True)
+    history = History()
     model.compile(loss=MeanSquaredError(), optimizer=Adam(learning_rate=0.001), metrics=[RootMeanSquaredError()])
 
     WINDOW_SIZE = 7
@@ -58,14 +61,35 @@ def multi_GRU(temp, sub1, sub2):
     epochs = 10
     progress_bar = st.progress(0)
     epoch_text = st.empty()
-    for epoch in range(epochs):
-        model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=1, callbacks=[cp], verbose=0)
-        time.sleep(1)  # Simulate training time
-        progress = (epoch + 1) / epochs
-        epoch_text.text(f"Epoch: {epoch + 1}")
-        progress_bar.progress(progress)
+    loss_text = st.empty()
+    val_loss_text = st.empty()
 
-    def plot_predictions2(model, X, y, headers, start=0, end=100):
+    for epoch in range(epochs):
+        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=1, callbacks=[cp, history], verbose=0)
+        time.sleep(1)  # Simulate training time
+
+        # Update progress bar and display epoch, loss, and validation loss
+        progress = (epoch + 1) / epochs
+        progress_bar.progress(progress)
+        epoch_text.text(f"Epoch: {epoch + 1}")
+        loss_text.text(f"Loss: {history.history['loss'][0]:.4f}")
+        val_loss_text.text(f"Val Loss: {history.history['val_loss'][0]:.4f}")
+
+    model = load_model('model/')
+
+    # Predictions and Actuals table
+    test_predictions = model.predict(X_test)
+    df_results = pd.DataFrame({
+        f'{sub1} Predictions': test_predictions[:, 0],
+        f'{sub1} Actuals': y_test[:, 0],
+        f'{sub2} Predictions': test_predictions[:, 1],
+        f'{sub2} Actuals': y_test[:, 1]
+    })
+    st.write("Predicted vs Actual Values:")
+    st.write(df_results)
+
+    # Plot predictions vs actuals using Plotly
+    def plot_predictions(model, X, y, headers, start=0, end=100):
         predictions = model.predict(X)
         p_preds, temp_preds = predictions[:, 0], predictions[:, 1]
         p_actuals, temp_actuals = y[:, 0], y[:, 1]
@@ -90,4 +114,5 @@ def multi_GRU(temp, sub1, sub2):
 
         return df
 
-    plot_predictions2(model, X_test, y_test, headers=[sub1, sub2])
+    plot_predictions(model, X_test, y_test, headers=[sub1, sub2])
+

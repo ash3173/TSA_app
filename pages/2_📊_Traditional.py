@@ -53,7 +53,9 @@ if node and edge:
 
         options = ["Select","Exponential Smoothing", "ARIMA","SARIMA",
         #"SARIMAX", 
-        "STL", "ARCH", "GARCH", "Prophet"]
+        "STL", 
+        #"ARCH", "GARCH", 
+        "Prophet"]
         selected_option = st.selectbox("Select the model", options)
 
         num_nodes = len(node_data["node"].unique())
