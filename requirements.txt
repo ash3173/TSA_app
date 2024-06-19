@@ -1,0 +1,14 @@
+plotly-express
+plotly
+matplotlib
+pandas
+numpy
+scikit-learn
+datetime
+tensorflow
+sklearn
+time
+statsmodels
+prophet
+arch
+warnings
