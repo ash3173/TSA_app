@@ -65,15 +65,15 @@ def multi_LSTM(temp, sub1, sub2):
     val_loss_text = st.empty()
 
     for epoch in range(epochs):
-        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=1, callbacks=[cp, history], verbose=0)
+        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=1, callbacks=[cp], verbose=0)
         time.sleep(1)  # Simulate training time
 
         # Update progress bar and display epoch, loss, and validation loss
         progress = (epoch + 1) / epochs
         progress_bar.progress(progress)
         epoch_text.text(f"Epoch: {epoch + 1}")
-        loss_text.text(f"Loss: {history.history['loss'][0]:.4f}")
-        val_loss_text.text(f"Val Loss: {history.history['val_loss'][0]:.4f}")
+        loss_text.text(f"Loss: {history.history['loss'][-1]:.4f}")
+        val_loss_text.text(f"Val Loss: {history.history['val_loss'][-1]:.4f}")
 
     model = load_model('model/')
 

@@ -25,7 +25,7 @@ def single_GRU(temp):
     ])
     model.summary()
 
-    cp = ModelCheckpoint('model3/', save_best_only=True)
+    cp = ModelCheckpoint('model/', save_best_only=True)
     history = History()
     model.compile(loss=MeanSquaredError(), optimizer=Adam(learning_rate=0.001), metrics=[RootMeanSquaredError()])
 
@@ -43,17 +43,17 @@ def single_GRU(temp):
     val_loss_text = st.empty()
 
     for epoch in range(epochs):
-        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=1, callbacks=[cp, history], verbose=0)
+        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=1, callbacks=[cp], verbose=0)
         time.sleep(1)  # Simulate training time
 
         # Update progress bar, epoch info, loss and validation loss
         progress = (epoch + 1) / epochs
         progress_bar.progress(progress)
         epoch_text.text(f"Epoch: {epoch + 1}")
-        loss_text.text(f"Loss: {history.history['loss'][0]:.4f}")
-        val_loss_text.text(f"Val Loss: {history.history['val_loss'][0]:.4f}")
+        loss_text.text(f"Loss: {history.history['loss'][-1]:.4f}")
+        val_loss_text.text(f"Val Loss: {history.history['val_loss'][-1]:.4f}")
 
-    model = load_model('model3/')
+    model = load_model('model/')
 
     test_predictions = model.predict(X_test).flatten()
     test_results = pd.DataFrame(data={'Test Predictions': test_predictions, 'Actuals': y_test})
