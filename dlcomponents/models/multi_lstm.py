@@ -78,7 +78,7 @@ def multi_LSTM(temp, sub1, sub2):
     model = load_model('model/')
 
     # Predictions and Actuals table
-    test_predictions = model.predict(X_test)
+    test_predictions = model.predict(X_test) 
     df_results = pd.DataFrame({
         f'{sub1} Predictions': test_predictions[:, 0],
         f'{sub1} Actuals': y_test[:, 0],
