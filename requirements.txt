@@ -2,7 +2,7 @@ plotly-express
 plotly
 matplotlib
 pandas
-numpy
+numpy==1.22.4
 scikit-learn
 datetime
 tensorflow
