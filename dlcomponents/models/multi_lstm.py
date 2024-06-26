@@ -24,7 +24,7 @@ def multi_LSTM(temp, sub1, sub2):
 
     model.summary()
 
-    cp = ModelCheckpoint('model/', save_best_only=True)
+    cp = ModelCheckpoint('model.keras', save_best_only=True)
     history = History()
     model.compile(loss=MeanSquaredError(), optimizer=Adam(learning_rate=0.001), metrics=[RootMeanSquaredError()])
 
@@ -75,7 +75,7 @@ def multi_LSTM(temp, sub1, sub2):
         loss_text.text(f"Loss: {history.history['loss'][-1]:.4f}")
         val_loss_text.text(f"Val Loss: {history.history['val_loss'][-1]:.4f}")
 
-    model = load_model('model/')
+    model = load_model('model.keras')
 
     # Predictions and Actuals table
     test_predictions = model.predict(X_test) 

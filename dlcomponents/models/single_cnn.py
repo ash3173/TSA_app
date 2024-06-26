@@ -25,7 +25,7 @@ def single_CNN(temp):
         Dense(1, activation='linear')
     ])
 
-    cp = ModelCheckpoint('model/', save_best_only=True)
+    cp = ModelCheckpoint('model.keras', save_best_only=True)
     history = History()
     model.compile(loss=MeanSquaredError(), optimizer=Adam(learning_rate=0.001), metrics=[RootMeanSquaredError()])
 
@@ -52,7 +52,7 @@ def single_CNN(temp):
         loss_text.text(f"Loss: {history.history['loss'][-1]:.4f}")
         val_loss_text.text(f"Val Loss: {history.history['val_loss'][-1]:.4f}")
 
-    model = load_model('model/')
+    model = load_model('model.keras')
 
     test_predictions = model.predict(X_test).flatten()
     test_results = pd.DataFrame(data={'Test Predictions': test_predictions, 'Actuals': y_test})
