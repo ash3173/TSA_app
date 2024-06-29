@@ -5,10 +5,11 @@ from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import *
 from tensorflow.keras.callbacks import ModelCheckpoint, History
 from tensorflow.keras.losses import MeanSquaredError
-from tensorflow.keras.metrics import RootMeanSquaredError
+from tensorflow.keras.metrics import RootMeanSquaredError, MeanAbsoluteError
 from tensorflow.keras.optimizers import Adam
 from dlcomponents.models.multi_preprocess import df_to_X_y3
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error, r2_score
 import time
 import plotly.express as px
 import streamlit as st
@@ -28,7 +29,7 @@ def multi_CNN_GRU(temp, sub1, sub2):
 
     cp = ModelCheckpoint('model.keras', save_best_only=True)
     history = History()
-    model.compile(loss=MeanSquaredError(), optimizer=Adam(learning_rate=0.001), metrics=[RootMeanSquaredError()])
+    model.compile(loss=MeanSquaredError(), optimizer=Adam(learning_rate=0.001), metrics=[RootMeanSquaredError(), MeanAbsoluteError()])
 
     WINDOW_SIZE = 7
     X, y = df_to_X_y3(temp, WINDOW_SIZE, sub1, sub2)
@@ -90,6 +91,17 @@ def multi_CNN_GRU(temp, sub1, sub2):
     st.write("Predicted vs Actual Values:")
     st.write(df_results)
 
+    # Calculate and display additional metrics
+    mae_sub1 = mean_absolute_error(y_test[:, 0], test_predictions[:, 0])
+    mae_sub2 = mean_absolute_error(y_test[:, 1], test_predictions[:, 1])
+    r2_sub1 = r2_score(y_test[:, 0], test_predictions[:, 0])
+    r2_sub2 = r2_score(y_test[:, 1], test_predictions[:, 1])
+
+    st.write(f"Mean Absolute Error ({sub1}): {mae_sub1:.4f}")
+    st.write(f"Mean Absolute Error ({sub2}): {mae_sub2:.4f}")
+    st.write(f"R² Score ({sub1}): {r2_sub1:.4f}")
+    st.write(f"R² Score ({sub2}): {r2_sub2:.4f}")
+
     # Plot predictions vs actuals using Plotly
     def plot_predictions(model, X, y, headers, start=0, end=100):
         predictions = model.predict(X)
@@ -117,4 +129,3 @@ def multi_CNN_GRU(temp, sub1, sub2):
         return df
 
     plot_predictions(model, X_test, y_test, headers=[sub1, sub2])
-

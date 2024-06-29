@@ -4,11 +4,12 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import *
 from tensorflow.keras.callbacks import ModelCheckpoint, History
-from tensorflow.keras.losses import MeanSquaredError
-from tensorflow.keras.metrics import RootMeanSquaredError
+from tensorflow.keras.losses import MeanSquaredError, MeanAbsoluteError
+from tensorflow.keras.metrics import RootMeanSquaredError, MeanAbsoluteError as MAE
 from tensorflow.keras.optimizers import Adam
 from dlcomponents.models.preprocess import df_to_X_y
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import r2_score
 import matplotlib.pyplot as plt
 import streamlit as st
 import time
@@ -27,12 +28,13 @@ def single_LSTM(temp):
 
     cp = ModelCheckpoint('model.keras', save_best_only=True)
     history = History()
-    model.compile(loss=MeanSquaredError(), optimizer=Adam(learning_rate=0.001), metrics=[RootMeanSquaredError()])
+    model.compile(loss=MeanSquaredError(),
+                  optimizer=Adam(learning_rate=0.001),
+                  metrics=[RootMeanSquaredError(), MeanAbsoluteError(), 'mae'])  # Adding MAE as a metric
 
     WINDOW_SIZE = 5
     X, y = df_to_X_y(temp, WINDOW_SIZE)
 
-    
     X_temp, X_test, y_temp, y_test = train_test_split(X, y, test_size=0.10, random_state=42)
     X_train, X_val, y_train, y_val = train_test_split(X_temp, y_temp, test_size=1/9, random_state=42)
 
@@ -58,6 +60,15 @@ def single_LSTM(temp):
     test_predictions = model.predict(X_test).flatten()
     test_results = pd.DataFrame(data={'Test Predictions': test_predictions, 'Actuals': y_test})
     st.write(test_results)
+
+    # Calculate and display additional metrics: MAE and R^2 Score
+    mae = tf.keras.metrics.MeanAbsoluteError()
+    mae.update_state(y_test, test_predictions)
+    mae_result = mae.result().numpy()
+    st.write(f"Mean Absolute Error: {mae_result:.4f}")
+
+    r2 = r2_score(y_test, test_predictions)
+    st.write(f"R² Score: {r2:.4f}")
 
     plt.plot(test_results['Test Predictions'][:50], label='Test Predictions')
     plt.plot(test_results['Actuals'][:50], label='Actuals')

@@ -9,6 +9,7 @@ from tensorflow.keras.metrics import RootMeanSquaredError
 from tensorflow.keras.optimizers import Adam
 from dlcomponents.models.preprocess import df_to_X_y
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
 import streamlit as st
 import time
@@ -57,6 +58,13 @@ def single_CNN(temp):
     test_predictions = model.predict(X_test).flatten()
     test_results = pd.DataFrame(data={'Test Predictions': test_predictions, 'Actuals': y_test})
     st.write(test_results)
+
+    # Calculate and display additional metrics
+    mae = mean_absolute_error(y_test, test_predictions)
+    r2 = r2_score(y_test, test_predictions)
+
+    st.write(f"Mean Absolute Error: {mae:.4f}")
+    st.write(f"R² Score: {r2:.4f}")
 
     plt.plot(test_results['Test Predictions'][:50], label='Test Predictions')
     plt.plot(test_results['Actuals'][:50], label='Actuals')
