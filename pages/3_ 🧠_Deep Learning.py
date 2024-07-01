@@ -124,18 +124,16 @@ elif model_option == "LSTM" and analysis_type == "Multivariate":
     selected_node_features_data = selected_node_data[selected_feature_headers]
     st.write(selected_node_features_data)
 
-    # New code to select two feature headers for forecasting
-    forecast_headers = st.multiselect("Select two feature headers for forecasting", selected_feature_headers, default=selected_feature_headers[:2])
+    forecast_headers = st.multiselect("Select feature headers for forecasting", selected_feature_headers, default=selected_feature_headers[:2])
 
-    # Ensure only two headers are selected
-    if len(forecast_headers) != 2:
-        st.warning("Please select exactly two feature headers for forecasting.")
+    if not forecast_headers:
+        st.warning("Please select at least one feature header for forecasting.")
     else:
         selected_forecast_features_data = selected_node_features_data[forecast_headers]
         st.write("Selected features for forecasting:")
         st.write(selected_forecast_features_data)
         if st.button("Train LSTM Model"):
-            multi_LSTM(selected_node_features_data,forecast_headers[0],forecast_headers[1])
+            multi_LSTM(selected_node_features_data,forecast_headers)
 
 elif model_option == "CNN" and analysis_type == "Multivariate":
     st.write("CNN model selected for multi-variate analysis.")
@@ -155,19 +153,17 @@ elif model_option == "CNN" and analysis_type == "Multivariate":
     selected_node_features_data = selected_node_data[selected_feature_headers]
     st.write(selected_node_features_data)
 
-    # New code to select two feature headers for forecasting
-    forecast_headers = st.multiselect("Select two feature headers for forecasting", selected_feature_headers, default=selected_feature_headers[:2])
+    forecast_headers = st.multiselect("Select feature headers for forecasting", selected_feature_headers, default=selected_feature_headers[:2])
 
-    # Ensure only two headers are selected
-    if len(forecast_headers) != 2:
-        st.warning("Please select exactly two feature headers for forecasting.")
+    if not forecast_headers:
+        st.warning("Please select at least one feature header for forecasting.")
     else:
         selected_forecast_features_data = selected_node_features_data[forecast_headers]
         st.write("Selected features for forecasting:")
         st.write(selected_forecast_features_data)
         
         if st.button("Train CNN Model"):
-            multi_CNN(selected_node_features_data, forecast_headers[0], forecast_headers[1])
+            multi_CNN(selected_node_features_data, forecast_headers)
 elif model_option == "GRU" and analysis_type == "Multivariate":
     st.write("GRU model selected for multi-variate analysis.")
     num_nodes = len(node_data["node"].unique())
@@ -186,19 +182,17 @@ elif model_option == "GRU" and analysis_type == "Multivariate":
     selected_node_features_data = selected_node_data[selected_feature_headers]
     st.write(selected_node_features_data)
 
-    # New code to select two feature headers for forecasting
-    forecast_headers = st.multiselect("Select two feature headers for forecasting", selected_feature_headers, default=selected_feature_headers[:2])
+    forecast_headers = st.multiselect("Select feature headers for forecasting", selected_feature_headers, default=selected_feature_headers[:2])
 
-    # Ensure only two headers are selected
-    if len(forecast_headers) != 2:
-        st.warning("Please select exactly two feature headers for forecasting.")
+    if not forecast_headers:
+        st.warning("Please select at least one feature header for forecasting.")
     else:
         selected_forecast_features_data = selected_node_features_data[forecast_headers]
         st.write("Selected features for forecasting:")
         st.write(selected_forecast_features_data)
         
         if st.button("Train GRU Model"):
-            multi_GRU(selected_node_features_data, forecast_headers[0], forecast_headers[1])
+            multi_GRU(selected_node_features_data, forecast_headers)
 elif model_option == "CNN-GRU" and analysis_type == "Multivariate":
     st.write("CNN-GRU model selected for multi-variate analysis.")
     num_nodes = len(node_data["node"].unique())
@@ -217,19 +211,18 @@ elif model_option == "CNN-GRU" and analysis_type == "Multivariate":
     selected_node_features_data = selected_node_data[selected_feature_headers]
     st.write(selected_node_features_data)
 
-    # New code to select two feature headers for forecasting
-    forecast_headers = st.multiselect("Select two feature headers for forecasting", selected_feature_headers, default=selected_feature_headers[:2])
+    forecast_headers = st.multiselect("Select feature headers for forecasting", selected_feature_headers, default=selected_feature_headers[:2])
 
     # Ensure only two headers are selected
-    if len(forecast_headers) != 2:
-        st.warning("Please select exactly two feature headers for forecasting.")
+    if not forecast_headers:
+        st.warning("Please select at least one feature header for forecasting.")
     else:
         selected_forecast_features_data = selected_node_features_data[forecast_headers]
         st.write("Selected features for forecasting:")
         st.write(selected_forecast_features_data)
 
         if st.button("Train CNN-GRU Model"):
-            multi_CNN_GRU(selected_node_features_data, forecast_headers[0], forecast_headers[1])
+            multi_CNN_GRU(selected_node_features_data, forecast_headers)
 elif model_option == "CNN-LSTM" and analysis_type == "Multivariate":
     st.write("CNN-LSTM model selected for multi-variate analysis.")
     num_nodes = len(node_data["node"].unique())
@@ -249,11 +242,11 @@ elif model_option == "CNN-LSTM" and analysis_type == "Multivariate":
     st.write(selected_node_features_data)
 
     # New code to select two feature headers for forecasting
-    forecast_headers = st.multiselect("Select two feature headers for forecasting", selected_feature_headers, default=selected_feature_headers[:2])
+    forecast_headers = st.multiselect("Select feature headers for forecasting", selected_feature_headers, default=selected_feature_headers[:2])
 
     # Ensure only two headers are selected
-    if len(forecast_headers) != 2:
-        st.warning("Please select exactly two feature headers for forecasting.")
+    if not forecast_headers:
+        st.warning("Please select at least one feature header for forecasting.")
     else:
         selected_forecast_features_data = selected_node_features_data[forecast_headers]
         st.write("Selected features for forecasting:")
@@ -261,4 +254,4 @@ elif model_option == "CNN-LSTM" and analysis_type == "Multivariate":
 
         if st.button("Train CNN-LSTM Model"):
             # Call your multi_CNN_LSTM function with selected features
-            multi_CNN_LSTM(selected_forecast_features_data, forecast_headers[0], forecast_headers[1])
+            multi_CNN_LSTM(selected_forecast_features_data, forecast_headers)

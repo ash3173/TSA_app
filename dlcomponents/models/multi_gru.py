@@ -7,7 +7,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint, History
 from tensorflow.keras.losses import MeanSquaredError
 from tensorflow.keras.metrics import RootMeanSquaredError, MeanAbsoluteError
 from tensorflow.keras.optimizers import Adam
-from dlcomponents.models.multi_preprocess import df_to_X_y3
+from dlcomponents.models.multi_preprocess import df_to_X_y3,preprocess_output,preprocess,plot_predictions
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score
 import time
@@ -17,11 +17,11 @@ import streamlit as st
 # Suppress the deprecation warning for plt.show() usage
 st.set_option('deprecation.showPyplotGlobalUse', False)
 
-def multi_GRU(temp, sub1, sub2):
+def multi_GRU(temp, target_columns):
     model = Sequential()
     model.add(GRU(64, activation='relu', input_shape=(7, temp.shape[1])))
     model.add(Dense(8, activation='relu'))
-    model.add(Dense(2, activation='linear'))
+    model.add(Dense(len(target_columns), activation='linear'))
 
     model.summary()
 
@@ -30,34 +30,23 @@ def multi_GRU(temp, sub1, sub2):
     model.compile(loss=MeanSquaredError(), optimizer=Adam(learning_rate=0.001), metrics=[RootMeanSquaredError(), MeanAbsoluteError()])
 
     WINDOW_SIZE = 7
-    X, y = df_to_X_y3(temp, WINDOW_SIZE, sub1, sub2)
+    X, y = df_to_X_y3(temp, WINDOW_SIZE, target_columns)
 
     X_train, X_temp, y_train, y_temp = train_test_split(X, y, train_size=0.75, random_state=42)
     X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.4, random_state=42)
 
-    p_training_mean = np.mean(X_train[:, :, 0])
-    p_training_std = np.std(X_train[:, :, 0])
+    # Calculate mean and std for normalization
+    mean_std_pairs = [(np.mean(X_train[:, :, i]), np.std(X_train[:, :, i])) for i in range(X_train.shape[2])]
+    target_mean_std_pairs = [(np.mean(y_train[:, i]), np.std(y_train[:, i])) for i in range(y_train.shape[1])]
 
-    temp_training_mean = np.mean(X_train[:, :, 1])
-    temp_training_std = np.std(X_train[:, :, 1])
+    # Preprocess the data
+    preprocess(X_train, mean_std_pairs)
+    preprocess(X_val, mean_std_pairs)
+    preprocess(X_test, mean_std_pairs)
+    preprocess_output(y_train, target_mean_std_pairs)
+    preprocess_output(y_val, target_mean_std_pairs)
+    preprocess_output(y_test, target_mean_std_pairs)
 
-    def preprocess(X):
-        X[:, :, 0] = (X[:, :, 0] - p_training_mean) / p_training_std
-        X[:, :, 1] = (X[:, :, 1] - temp_training_mean) / temp_training_std 
-        return X
-
-    def preprocess_output(y):
-        y[:, 0] = (y[:, 0] - p_training_mean) / p_training_std
-        y[:, 1] = (y[:, 1] - temp_training_mean) / temp_training_std
-        return y
-
-    preprocess(X_train)
-    preprocess(X_val)
-    preprocess(X_test)
-
-    preprocess_output(y_train)
-    preprocess_output(y_val)
-    preprocess_output(y_test)
 
     epochs = 10
     progress_bar = st.progress(0)
@@ -80,51 +69,21 @@ def multi_GRU(temp, sub1, sub2):
 
     # Predictions and Actuals table
     test_predictions = model.predict(X_test)
-    df_results = pd.DataFrame({
-        f'{sub1} Predictions': test_predictions[:, 0],
-        f'{sub1} Actuals': y_test[:, 0],
-        f'{sub2} Predictions': test_predictions[:, 1],
-        f'{sub2} Actuals': y_test[:, 1]
-    })
+    # Create a DataFrame with interleaved prediction and actual columns
+    df_results = pd.DataFrame()
+    for i, col in enumerate(target_columns):
+        df_results[f'{col} Predictions'] = test_predictions[:, i]
+        df_results[f'{col} Actuals'] = y_test[:, i]
     st.write("Predicted vs Actual Values:")
     st.write(df_results)
 
     # Calculate and display additional metrics
-    mae_sub1 = mean_absolute_error(y_test[:, 0], test_predictions[:, 0])
-    mae_sub2 = mean_absolute_error(y_test[:, 1], test_predictions[:, 1])
-    r2_sub1 = r2_score(y_test[:, 0], test_predictions[:, 0])
-    r2_sub2 = r2_score(y_test[:, 1], test_predictions[:, 1])
-
-    st.write(f"Mean Absolute Error ({sub1}): {mae_sub1:.4f}")
-    st.write(f"Mean Absolute Error ({sub2}): {mae_sub2:.4f}")
-    st.write(f"R² Score ({sub1}): {r2_sub1:.4f}")
-    st.write(f"R² Score ({sub2}): {r2_sub2:.4f}")
+    for i, col in enumerate(target_columns):
+        mae = mean_absolute_error(y_test[:, i], test_predictions[:, i])
+        r2 = r2_score(y_test[:, i], test_predictions[:, i])
+        st.write(f"Mean Absolute Error ({col}): {mae:.4f}")
+        st.write(f"R² Score ({col}): {r2:.4f}")
 
     # Plot predictions vs actuals using Plotly
-    def plot_predictions(model, X, y, headers, start=0, end=100):
-        predictions = model.predict(X)
-        p_preds, temp_preds = predictions[:, 0], predictions[:, 1]
-        p_actuals, temp_actuals = y[:, 0], y[:, 1]
-        
-        df = pd.DataFrame(data={
-            f'{headers[1]} Predictions': temp_preds,
-            f'{headers[1]} Actuals': temp_actuals,
-            f'{headers[0]} Predictions': p_preds,
-            f'{headers[0]} Actuals': p_actuals
-        })
-
-        # Filter the data based on start and end
-        df_filtered = df[start:end]
-
-        # Create an interactive plot using Plotly
-        fig = px.line(df_filtered, y=[f'{headers[1]} Predictions', f'{headers[1]} Actuals', f'{headers[0]} Predictions', f'{headers[0]} Actuals'],
-                    labels={'value': 'Values', 'variable': 'Predictions vs Actuals'},
-                    title='Predictions vs Actuals')
-
-        # Display the interactive plot in Streamlit
-        st.plotly_chart(fig)
-
-        return df
-
-    plot_predictions(model, X_test, y_test, headers=[sub1, sub2])
+    plot_predictions(model, X_test, y_test, target_columns)
 
