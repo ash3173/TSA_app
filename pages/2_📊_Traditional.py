@@ -17,6 +17,7 @@ from tradcomponents.models.univariate.arch import run_arch_model
 from tradcomponents.models.univariate.garch import run_garch_model
 from tradcomponents.models.univariate.sarima import run_sarima_model
 from tradcomponents.models.univariate.sarimax import run_sarimax_model
+from tradcomponents.models.univariate.neural_prophet import run_neural_prophet_model
 
 
 from tradcomponents.models.multivariate.mul_prophet import multivariate_prophet_forecast
@@ -55,7 +56,7 @@ if node and edge:
         #"SARIMAX", 
         "STL", 
         #"ARCH", "GARCH", 
-        "Prophet"]
+        "Prophet","NeuralProphet"]
         selected_option = st.selectbox("Select the model", options)
 
         num_nodes = len(node_data["node"].unique())
@@ -165,6 +166,11 @@ if node and edge:
             plt.legend()
             st.pyplot(plt)  # Display the plot in Streamlit
 
+        if selected_option == "NeuralProphet":
+            st.sidebar.write("Select a feature index to forecast")
+            feature_index = st.number_input("Feature Index", min_value=0, max_value=len(node_data["feature"].unique())-1, step=1, value=1)
+            run_neural_prophet_model(node_data, edge_data, feature_index)
+        
         if selected_option == "Exponential Smoothing":
 
             results = {}
