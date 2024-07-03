@@ -28,7 +28,13 @@ from decompComponents.models.deepLearning.multivariate.multi_cnn_lstm import mul
 
 
 from tradcomponents.functions import rmse
-from tradcomponents.functions import differencing
+# from tradcomponents.functions import differencing
+def differencing(y_true, y_pred):
+    error = 0
+    for i in range(len(y_pred)) :
+        error += abs(y_true[i] - y_pred[i])
+
+    return error
 
 
 
