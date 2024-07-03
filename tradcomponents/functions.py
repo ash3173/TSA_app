@@ -22,3 +22,10 @@ def get_feature_with_dates(df,feature_index) :
 
 def rmse(y_true, y_pred):
     return np.sqrt(mean_squared_error(y_true, y_pred))
+
+def differencing(y_true, y_pred):
+    error = 0
+    for i in range(len(y_pred)) :
+        error += abs(y_true[i] - y_pred[i])
+
+    return error
