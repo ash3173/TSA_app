@@ -18,7 +18,7 @@ from decompComponents.dl_functions import df_to_X_y3,preprocess_output,preproces
 # Suppress the deprecation warning for plt.show() usage
 st.set_option('deprecation.showPyplotGlobalUse', False)
 
-@st.experimental_fragment
+# @st.experimental_fragment
 def multi_LSTM(temp, target_columns,key):
 
     model = Sequential()
