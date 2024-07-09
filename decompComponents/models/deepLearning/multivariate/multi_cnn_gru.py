@@ -13,13 +13,15 @@ import time
 import plotly.express as px
 import streamlit as st
 
-from decompComponents.dl_functions import df_to_X_y3,preprocess_output,preprocess,plot_predictions
+from decompComponents.dl_functions import df_to_X_y3, preprocess_output, preprocess, plot_predictions
 
 # Suppress the deprecation warning for plt.show() usage
 st.set_option('deprecation.showPyplotGlobalUse', False)
 
 # @st.experimental_fragment
-def multi_CNN_GRU(temp, target_columns,key):
+
+
+def multi_CNN_GRU(temp, target_columns, key):
     model = Sequential()
     model.add(InputLayer((7, temp.shape[1])))
     model.add(Conv1D(64, kernel_size=2, activation='relu'))
@@ -31,17 +33,22 @@ def multi_CNN_GRU(temp, target_columns,key):
 
     cp = ModelCheckpoint('model.keras', save_best_only=True)
     history = History()
-    model.compile(loss=MeanSquaredError(), optimizer=Adam(learning_rate=0.001), metrics=[RootMeanSquaredError(), MeanAbsoluteError()])
+    model.compile(loss=MeanSquaredError(), optimizer=Adam(
+        learning_rate=0.001), metrics=[RootMeanSquaredError(), MeanAbsoluteError()])
 
     WINDOW_SIZE = 7
     X, y = df_to_X_y3(temp, WINDOW_SIZE, target_columns)
 
-    X_train, X_temp, y_train, y_temp = train_test_split(X, y, train_size=0.75, random_state=42)
-    X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.4, random_state=42)
+    X_train, X_temp, y_train, y_temp = train_test_split(
+        X, y, train_size=0.75, random_state=42)
+    X_val, X_test, y_val, y_test = train_test_split(
+        X_temp, y_temp, test_size=0.4, random_state=42)
 
     # Calculate mean and std for normalization
-    mean_std_pairs = [(np.mean(X_train[:, :, i]), np.std(X_train[:, :, i])) for i in range(X_train.shape[2])]
-    target_mean_std_pairs = [(np.mean(y_train[:, i]), np.std(y_train[:, i])) for i in range(y_train.shape[1])]
+    mean_std_pairs = [(np.mean(X_train[:, :, i]), np.std(
+        X_train[:, :, i])) for i in range(X_train.shape[2])]
+    target_mean_std_pairs = [(np.mean(y_train[:, i]), np.std(
+        y_train[:, i])) for i in range(y_train.shape[1])]
 
     # Preprocess the data
     preprocess(X_train, mean_std_pairs)
@@ -51,14 +58,16 @@ def multi_CNN_GRU(temp, target_columns,key):
     preprocess_output(y_val, target_mean_std_pairs)
     preprocess_output(y_test, target_mean_std_pairs)
 
-    epochs = st.slider("Epochs", 1, 100, 10,key=key)
+    # epochs = st.slider("Epochs", 1, 100, 10,key=key)
+    epochs = 30
     progress_bar = st.progress(0)
     epoch_text = st.empty()
     loss_text = st.empty()
     val_loss_text = st.empty()
 
     for epoch in range(epochs):
-        history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=1, callbacks=[cp], verbose=0)
+        history = model.fit(X_train, y_train, validation_data=(
+            X_val, y_val), epochs=1, callbacks=[cp], verbose=0)
         time.sleep(1)  # Simulate training time
 
         # Update progress bar and display epoch, loss, and validation loss
@@ -72,11 +81,19 @@ def multi_CNN_GRU(temp, target_columns,key):
 
     # Predictions and Actuals table
     test_predictions = model.predict(X_test)
-    test_predictions = pd.DataFrame(test_predictions, index=temp.index[-len(test_predictions):], columns=target_columns)
-    
-    return test_predictions
+    test_predictions_dataframe = pd.DataFrame(
+        test_predictions, index=temp.index[-len(test_predictions):], columns=target_columns)
 
+    df_results = pd.DataFrame()
+    for i, col in enumerate(target_columns):
+        df_results[f'{col} Predictions'] = test_predictions[:, i]
+        df_results[f'{col} Actuals'] = y_test[:, i]
 
+    fig = px.line(df_results, x=df_results.index, y=[f'{col} Predictions' for col in target_columns] + [
+                  f'{col} Actuals' for col in target_columns], title='Predictions vs Actuals')
+    st.plotly_chart(fig)
+
+    return test_predictions_dataframe
 
     # df_results = pd.DataFrame()
     # for i, col in enumerate(target_columns):

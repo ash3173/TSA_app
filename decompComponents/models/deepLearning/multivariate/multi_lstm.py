@@ -51,7 +51,8 @@ def multi_LSTM(temp, target_columns,key):
     preprocess_output(y_test, target_mean_std_pairs)
 
 
-    epochs = st.slider("Epochs", 1, 100, 10,key=key)
+    # epochs = st.slider("Epochs", 1, 100, 10,key=key)
+    epochs = 30
     progress_bar = st.progress(0)
     epoch_text = st.empty()
     loss_text = st.empty()
@@ -73,18 +74,27 @@ def multi_LSTM(temp, target_columns,key):
     # Predictions and Actuals table
     test_predictions = model.predict(X_test)
 
-    test_predictions = pd.DataFrame(test_predictions, index=temp.index[-len(test_predictions):], columns=target_columns)
+    test_predictions_dataframe = pd.DataFrame(test_predictions, index=temp.index[-len(test_predictions):], columns=target_columns)
     
-    return test_predictions
+    df_results = pd.DataFrame()
+    for i, col in enumerate(target_columns):
+        df_results[f'{col} Predictions'] = test_predictions[:, i]
+        df_results[f'{col} Actuals'] = y_test[:, i]
+
+    fig = px.line(df_results, x=df_results.index, y=[f'{col} Predictions' for col in target_columns] + [f'{col} Actuals' for col in target_columns], title='Predictions vs Actuals')
+    st.plotly_chart(fig)
+
+    for i, col in enumerate(target_columns):
+        test_predictions[:, i] = test_predictions[:, i] * target_mean_std_pairs[i][1] + target_mean_std_pairs[i][0]
+        y_test[:, i] = y_test[:, i] * target_mean_std_pairs[i][1] + target_mean_std_pairs[i][0]
+
+    # st.write("After Transforming back to original scale:")
+    # st.write(test_predictions)
+
+    return test_predictions_dataframe
 
     # st.write("Predictions:")
     # st.write(test_predictions)
-
-    # st.write("Predictions:")
-    # st.write(test_predictions)
-    # st.write(temp)
-    # st.write("len",len(temp))
-    # st.write("len of test",len(test_predictions))
 
     # Create a DataFrame with interleaved prediction and actual columns
     # df_results = pd.DataFrame()

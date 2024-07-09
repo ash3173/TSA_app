@@ -21,7 +21,6 @@ st.set_option('deprecation.showPyplotGlobalUse', False)
 
 # @st.experimental_fragment
 def multi_GRU(temp, target_columns,key):
-    st.write(temp,target_columns)
     model = Sequential()
     model.add(GRU(64, activation='relu', input_shape=(7, temp.shape[1])))
     model.add(Dense(8, activation='relu'))
@@ -52,7 +51,8 @@ def multi_GRU(temp, target_columns,key):
     preprocess_output(y_test, target_mean_std_pairs)
 
 
-    epochs = st.slider("Epochs", 1, 100, 10,key=key)
+    # epochs = st.slider("Epochs", 1, 100, 10,key=key)
+    epochs = 30
     progress_bar = st.progress(0)
     epoch_text = st.empty()
     loss_text = st.empty()
@@ -73,9 +73,17 @@ def multi_GRU(temp, target_columns,key):
 
     # Predictions and Actuals table
     test_predictions = model.predict(X_test)
-    test_predictions = pd.DataFrame(test_predictions, index=temp.index[-len(test_predictions):], columns=target_columns)
+    test_predictions_dataframe = pd.DataFrame(test_predictions, index=temp.index[-len(test_predictions):], columns=target_columns)
     
-    return test_predictions
+    df_results = pd.DataFrame()
+    for i, col in enumerate(target_columns):
+        df_results[f'{col} Predictions'] = test_predictions[:, i]
+        df_results[f'{col} Actuals'] = y_test[:, i]
+
+    fig = px.line(df_results, x=df_results.index, y=[f'{col} Predictions' for col in target_columns] + [f'{col} Actuals' for col in target_columns], title='Predictions vs Actuals')
+    st.plotly_chart(fig)
+
+    return test_predictions_dataframe
 
     # # Create a DataFrame with interleaved prediction and actual columns
     # df_results = pd.DataFrame()

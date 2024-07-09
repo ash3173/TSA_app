@@ -28,13 +28,7 @@ from decompComponents.models.deepLearning.multivariate.multi_cnn_lstm import mul
 
 
 from tradcomponents.functions import rmse
-# from tradcomponents.functions import differencing
-def differencing(y_true, y_pred):
-    error = 0
-    for i in range(len(y_pred)) :
-        error += abs(y_true[i] - y_pred[i])
-
-    return error
+from tradcomponents.functions import differencing
 
 
 
@@ -307,6 +301,7 @@ if node and edge :
                 st.write("Selected features for forecasting:")
                 st.write(selected_forecast_features_data)
 
+                # st.write("Data before decomposition",selected_forecast_features_data)
                 trend_features_data , seasonal_features_data , residue_features_data = decompose_multivariate(selected_node_features_data)
 
                 options = ["Select","LSTM","GRU","CNN","CNN-LSTM","CNN-GRU"]
@@ -371,17 +366,24 @@ if node and edge :
                 
                 # plotting the model
                 if model_option != "Select" and residue_option != "Select" and seasonal_option != "Select" and trend_option != "Select":
+                    
+                    # st.write(trend_features_data,forecasted_trend)
+                    # st.write(seasonal_features_data,forecasted_seasonal)
+                    # st.write(residue_features_data,forecasted_residue)
+                    
 
                     test_size = int(len(selected_forecast_features_data) * 0.1)
                     train_size = len(selected_forecast_features_data) - test_size
                     forecast = selected_forecast_features_data.copy()[-test_size:]
+                    # st.write("Actual data")
+                    # st.write(forecast)
 
                     for i in range(len(selected_forecast_features_data.columns)) :
                         forecast.iloc[:,i] = forecasted_seasonal.iloc[:,i] + forecasted_trend.iloc[:,i] + forecasted_residue.iloc[:,i]
                         forecast.rename(columns={forecast.columns[i]:f'forecasted_{i}'},inplace=True)
                     
-                    st.write("Forecasted data")
-                    st.write(forecast)
+                    # st.write("Forecasted data")
+                    # st.write(forecast)
 
                     final = pd.concat([selected_forecast_features_data,forecast],axis=1)
                     fig = px.line(final, x=final.index, y=final.columns , title="Forecasting using both seasonality and trend")
