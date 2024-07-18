@@ -8,7 +8,7 @@ from dlcomponents.models.single_gru import single_GRU
 from dlcomponents.models.multi_lstm import multi_LSTM
 from dlcomponents.models.multi_cnn import multi_CNN
 from dlcomponents.models.multi_gru import multi_GRU
-from dlcomponents.models.multi_tcn import multi_TCN
+# from dlcomponents.models.multi_tcn import multi_TCN
 from dlcomponents.models.multi_cnn_gru import multi_CNN_GRU
 from dlcomponents.models.multi_cnn_lstm import multi_CNN_LSTM
 from dlcomponents.models.ar import ar_CNN_LSTM
