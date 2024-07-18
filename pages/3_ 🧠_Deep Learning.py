@@ -21,7 +21,9 @@ node = st.sidebar.file_uploader("Upload a Node data file", type=["csv"])
 edge = st.sidebar.file_uploader("Upload a Edge data file", type=["csv"])
 
 # Dropdown menu for model selection
-options = ["Select", "CNN", "LSTM", "GRU","TCN", "CNN-GRU","CNN-LSTM","AR CNN-LSTM"]
+options = ["Select", "CNN", "LSTM", "GRU",
+#"TCN", 
+"CNN-GRU","CNN-LSTM","AR CNN-LSTM"]
 model_option = st.sidebar.selectbox("Choose a model", options)
 
 analysis_type = st.sidebar.selectbox("Choose analysis type", ["Select", "Single Variate", "Multivariate"])

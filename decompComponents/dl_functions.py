@@ -32,7 +32,12 @@ def preprocess_output(y, mean_std_pairs):
         y[:, i] = (y[:, i] - mean) / std
     return y
 
+def postprocess(predictions, mean_std_pairs):
+    for i, (mean, std) in enumerate(mean_std_pairs):
+        predictions[:, i] = (predictions[:, i] * std) + mean
 
+    return predictions
+    
 # Function to plot predictions for multiple target variables
 def plot_predictions(model, X, y, headers, start=0, end=100):
     predictions = model.predict(X)
