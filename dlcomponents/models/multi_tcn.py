@@ -26,7 +26,7 @@ def multi_TCN(temp, target_columns):
     model.add(Dense(8, activation='relu'))
     model.add(Dense(len(target_columns), activation='linear'))
 
-    tcn_full_summary(model, expand_residual_blocks=False)
+    
 
     cp = ModelCheckpoint('model.keras', save_best_only=True)
     history = History()
