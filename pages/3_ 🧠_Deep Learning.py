@@ -289,7 +289,7 @@ elif model_option == "CNN-LSTM" and analysis_type == "Multivariate":
             # Call your multi_CNN_LSTM function with selected features
             multi_CNN_LSTM(selected_forecast_features_data, forecast_headers)
 elif model_option == "AR CNN-LSTM" and analysis_type == "Multivariate":
-    st.write("CNN-LSTM model selected for multi-variate analysis.")
+    st.write("Autoregressive CNN-LSTM model selected for multi-variate analysis.")
     num_nodes = len(node_data["node"].unique())
     num_features = len(node_data["feature"].unique())
     node_index = st.slider("Select the node index", 0, num_nodes - 1)
